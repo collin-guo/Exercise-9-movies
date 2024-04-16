@@ -1,27 +1,29 @@
 """Identify the most popular movie ratings based on data in two CSV files."""
-
 from argparse import ArgumentParser
 import pandas as pd
 import sys
 
-
 def best_movies(movies_file, ratings_file):
-    """Identify the most popular movie ratings based on data in two CSV files.
-    
+    """This function reads each csv file into its own data frame. 
+
     Args:
-        movies_file (str): Path to the CSV file containing movie data.
-        ratings_file (str): Path to the CSV file containing ratings.
-        
+        movies_file (str): The path to the CSV file containing the movie data. 
+        ratings_file (str): The path to the CSV file containing the rating data. 
+
     Returns:
-        pandas.Series: Series containing average ratings for each movie title, sorted in descending order.
+       panda.series : a sorted version of the series of average ratings by appending the sort values function to the variable 
     """
-    movies_dataframe = pd.read_csv(movies_file)
-    ratings_dataframe = pd.read_csv(ratings_file)
+    movies_df = pd.read_csv(movies_file)
+    ratings_df = pd.read_csv(ratings_file)
+    
+    merged_df = pd.merge(ratings_df, movies_df, left_on ='item id', right_on ='movie id', how ='inner')
+    
+    average_ratings = merged_df.groupby('movie title')['rating'].mean()
+    average_ratings.dropna(inplace=True) 
+    
+    sorted_ratings = average_ratings.sort_values(ascending=False)
 
-    merged_dataframe = pd.merge(movies_dataframe, ratings_dataframe, left_on='movie id', right_on='item id', how='inner')
-
-    average_ratings = merged_dataframe.groupby('movie title')['rating'].mean()
-    return average_ratings.sort_values(ascending=False)
+    return sorted_ratings 
 
 
 def parse_args(arglist):
@@ -44,4 +46,3 @@ if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
     movies = best_movies(args.movie_csv, args.rating_csv)
     print(movies.head())
-
